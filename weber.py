@@ -3,6 +3,7 @@ import os
 import requests
 from bs4 import BeautifulSoup
 import wget
+from urllib.parse import urlparse
 from lib.tools import *
 
 class program():
@@ -19,13 +20,24 @@ class program():
         if self.tool.argHasValue("-url"):
           val = self.tool.argValue("-url")
           self.url = val
+          self.domain=urlparse(self.url).netloc
         else:
             self.stop("Error, -url is missing !")
 
     def run(self):
         list=self.getHyperLinks(self.url)
 
-        print(list)
+        for url in list:
+            if self.sameDomain(url):
+                cleanedUrl= self.cleanUrl(url)
+                print(cleanedUrl)
+
+    def cleanUrl(self, url):
+        u=urlparse(url)
+        return u.scheme + "://" + u.netloc + u.path
+
+    def sameDomain(self, url):
+        return urlparse(url).netloc == self.domain
     
     def getHyperLinks(self, url):
         req = requests.get(url, self.headers)
