@@ -25,12 +25,22 @@ class program():
             self.stop("Error, -url is missing !")
 
     def run(self):
-        list=self.getHyperLinks(self.url)
+        listToScan=self.extract(self.url)
+        listScanned=[self.url]
+        
+        deep=1
+        for i in range(deep):
+            newListToScan=[]
+            for url in listToScan:
+                print("SCANNING",url)
+                newListToScan += self.extract(url)
+                listScanned.append(url)
+            listToScan=list(dict.fromkeys(newListToScan)) #removing duplicates
 
-        for url in list:
-            if self.sameDomain(url):
-                cleanedUrl= self.cleanUrl(url)
-                print(cleanedUrl)
+        print("To scan")
+        print(listToScan)
+        print("\nScanned")
+        print(listScanned)
 
     def cleanUrl(self, url):
         u=urlparse(url)
@@ -39,17 +49,20 @@ class program():
     def sameDomain(self, url):
         return urlparse(url).netloc == self.domain
     
-    def getHyperLinks(self, url):
+    def extract(self, url):
         req = requests.get(url, self.headers)
         soup = BeautifulSoup(req.content, 'html.parser')
         tab=soup.find_all('a', href=True)
 
-        list=[]
+        links=[]
         for u in tab:
-            try: list.append(u['href'])
-            except IndexError: 1
-        
-        return list
+            urlFound=u['href']
+            if self.sameDomain(urlFound):
+                urlFound=self.cleanUrl(urlFound)
+                try: links.append(urlFound)
+                except IndexError: 1
+        links=list(dict.fromkeys(links)) #removing duplicates
+        return links
 
     def stop(self, msg = ""):
         if msg != "": print(msg)
