@@ -31,7 +31,7 @@ class program():
           val = self.tool.argValue("-deep")
           self.deep = int(val)
         else:
-          print("-deep flag not provided, setting deep to 2")
+          #print("-deep flag not provided, setting deep to 2")
           self.deep = 2
 
         self.verbose = self.tool.argExist("-v")
@@ -68,7 +68,8 @@ class program():
             
         print("\nRemaining url to scan : {}\n".format(len(listToScan)))
 
-        self.printFoundUrls(listScanned)
+        if self.verbose: self.printFoundUrls(listScanned)
+        self.writeFoundUrls(listScanned)
 
     def printFoundUrls(self,listUrls):
         print("Url found ({}):".format(len(listUrls)))
@@ -76,6 +77,14 @@ class program():
         for url in listUrls:
             print(url)
         print("")
+
+    def writeFoundUrls(self,listUrls):
+        fileName=self.removeSchemeUrl(self.url) + ".txt"
+        f = open(fileName, "w")
+        listUrls.sort()
+        for url in listUrls:
+            f.write(url + "\n")
+        f.close()
 
     def removeSchemeUrl(self,url):
         u=urlparse(url)
@@ -104,7 +113,7 @@ class program():
             links=list(dict.fromkeys(links)) #removing duplicates
             return links
         except:
-            self.stop("\nERROR\n")
+            print("\nERROR\n")
 
     def stop(self, msg = ""):
         if msg != "": print(msg)
