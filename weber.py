@@ -31,7 +31,8 @@ class program():
           val = self.tool.argValue("-deep")
           self.deep = int(val)
         else:
-          self.deep = 3
+          print("-deep flag not provided, setting deep to 2")
+          self.deep = 2
 
         self.verbose = self.tool.argExist("-v")
 
@@ -41,10 +42,16 @@ class program():
         listScanned=[]
 
         for i in range(self.deep):
-            print("\nDeep {}/{}".format(i+1,self.deep))
+            print("\nDeep {}/{}".format(i+1,self.deep),end="")
+            sys.stdout.flush()
+
             newListToScan=[]
             for url in listToScan:
-                if self.verbose: print("SCANNING",url)
+                if self.verbose: 
+                    print("\nSCANNING {}".format(url),end="")
+                else:
+                    print(".",end="")
+                sys.stdout.flush()
                 newListToScan += self.extract(url)
                 listScanned.append(self.removeSchemeUrl(url))
 
@@ -55,7 +62,7 @@ class program():
                     newListToScan.remove("https://"+url)
 
             listToScan=list(dict.fromkeys(newListToScan)) #removing duplicates
-            print("{} new urls found".format(len(listToScan)))
+            print("\n{} new urls found".format(len(listToScan)))
 
             if len(listToScan)==0: break
             
