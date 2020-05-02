@@ -20,27 +20,59 @@ class program():
         if self.tool.argHasValue("-url"):
           val = self.tool.argValue("-url")
           self.url = val
+
+          if urlparse(self.url).scheme=="":
+            self.url = "http://" + self.url
           self.domain=urlparse(self.url).netloc
         else:
             self.stop("Error, -url is missing !")
 
+        if self.tool.argHasValue("-deep"):
+          val = self.tool.argValue("-deep")
+          self.deep = int(val)
+        else:
+          self.deep = 3
+
+        self.verbose = self.tool.argExist("-v")
+
     def run(self):
-        listToScan=self.extract(self.url)
-        listScanned=[self.url]
-        
-        deep=1
-        for i in range(deep):
+        print("Starting scan of {} with deep {}".format(self.url,self.deep))
+        listToScan=[self.url]
+        listScanned=[]
+
+        for i in range(self.deep):
+            print("\nDeep {}/{}".format(i+1,self.deep))
             newListToScan=[]
             for url in listToScan:
-                print("SCANNING",url)
+                if self.verbose: print("SCANNING",url)
                 newListToScan += self.extract(url)
-                listScanned.append(url)
-            listToScan=list(dict.fromkeys(newListToScan)) #removing duplicates
+                listScanned.append(self.removeSchemeUrl(url))
 
-        print("To scan")
-        print(listToScan)
-        print("\nScanned")
-        print(listScanned)
+            for url in listScanned:
+                while ("http://"+url) in newListToScan:
+                    newListToScan.remove("http://"+url)
+                while ("https://"+url) in newListToScan:
+                    newListToScan.remove("https://"+url)
+
+            listToScan=list(dict.fromkeys(newListToScan)) #removing duplicates
+            print("{} new urls found".format(len(listToScan)))
+
+            if len(listToScan)==0: break
+            
+        print("\nRemaining url to scan : {}\n".format(len(listToScan)))
+
+        self.printFoundUrls(listScanned)
+
+    def printFoundUrls(self,listUrls):
+        print("Url found ({}):".format(len(listUrls)))
+        listUrls.sort()
+        for url in listUrls:
+            print(url)
+        print("")
+
+    def removeSchemeUrl(self,url):
+        u=urlparse(url)
+        return u.netloc + u.path
 
     def cleanUrl(self, url):
         u=urlparse(url)
@@ -50,19 +82,22 @@ class program():
         return urlparse(url).netloc == self.domain
     
     def extract(self, url):
-        req = requests.get(url, self.headers)
-        soup = BeautifulSoup(req.content, 'html.parser')
-        tab=soup.find_all('a', href=True)
+        try:
+            req = requests.get(url, self.headers)
+            soup = BeautifulSoup(req.content, 'html.parser')
+            tab=soup.find_all('a', href=True)
 
-        links=[]
-        for u in tab:
-            urlFound=u['href']
-            if self.sameDomain(urlFound):
-                urlFound=self.cleanUrl(urlFound)
-                try: links.append(urlFound)
-                except IndexError: 1
-        links=list(dict.fromkeys(links)) #removing duplicates
-        return links
+            links=[]
+            for u in tab:
+                urlFound=u['href']
+                if self.sameDomain(urlFound):
+                    urlFound=self.cleanUrl(urlFound)
+                    try: links.append(urlFound)
+                    except IndexError: 1
+            links=list(dict.fromkeys(links)) #removing duplicates
+            return links
+        except:
+            self.stop("\nERROR\n")
 
     def stop(self, msg = ""):
         if msg != "": print(msg)
