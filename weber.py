@@ -36,19 +36,21 @@ class program():
 
         self.verbose = self.tool.argExist("-v")
 
+        self.allowedExtensions=["html","php","htm"]
+
     def run(self):
         print("Starting scan of {} with deep {}".format(self.url,self.deep))
         listToScan=[self.url]
         listScanned=[]
 
         for i in range(self.deep):
-            print("\nDeep {}/{}".format(i+1,self.deep),end="")
+            print("\nDeep {}/{}".format(i+1,self.deep))
             sys.stdout.flush()
 
             newListToScan=[]
             for url in listToScan:
                 if self.verbose: 
-                    print("\nSCANNING {}".format(url),end="")
+                    print("SCANNING {}".format(url))
                 else:
                     print(".",end="")
                 sys.stdout.flush()
@@ -62,7 +64,8 @@ class program():
                     newListToScan.remove("https://"+url)
 
             listToScan=list(dict.fromkeys(newListToScan)) #removing duplicates
-            print("\n{} new urls found".format(len(listToScan)))
+            if not self.verbose: print("")
+            print("{} new urls found".format(len(listToScan)))
 
             if len(listToScan)==0: break
             
@@ -79,7 +82,7 @@ class program():
         print("")
 
     def writeFoundUrls(self,listUrls):
-        fileName=self.removeSchemeUrl(self.url) + ".txt"
+        fileName=urlparse(self.url).netloc + ".txt"
         f = open(fileName, "w")
         listUrls.sort()
         for url in listUrls:
@@ -98,6 +101,7 @@ class program():
         return urlparse(url).netloc == self.domain
     
     def extract(self, url):
+        if self.isAFile(url): return []
         try:
             req = requests.get(url, self.headers)
             soup = BeautifulSoup(req.content, 'html.parser')
@@ -114,6 +118,16 @@ class program():
             return links
         except:
             print("\nERROR\n")
+
+    def isAFile(self,url):
+        url=urlparse(url).path
+        url=url.split("/")[-1]
+        if "." not in url: return False
+
+        url = url.split(".")[-1]
+        if url in self.allowedExtensions: return False
+
+        return True
 
     def stop(self, msg = ""):
         if msg != "": print(msg)
