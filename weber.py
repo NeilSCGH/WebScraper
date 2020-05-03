@@ -50,7 +50,7 @@ class program():
             newListToScan=[]
             for url in listToScan:
                 if self.verbose: 
-                    print("SCANNING {}".format(url))
+                    print("SCANNING {}".format(urlparse(url).path))
                 else:
                     print(".",end="")
                 sys.stdout.flush()
