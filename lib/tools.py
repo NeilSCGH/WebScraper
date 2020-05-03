@@ -24,3 +24,9 @@ class tools():
     if val[0]=="-":#if the argName start with a -, it's not a value but the new arg
       return False
     return self.argExist(self.argValue(argName))
+
+  def tryToGetValue(self,argName,defaultValue):
+    if argHasValue(argName):
+      return self.tool.argValue("-deep")
+    else:
+      return defaultValue

@@ -18,34 +18,20 @@ class program():
 
     def setup(self,args):
         #Help
-        if self.tool.argExist("-h") or self.tool.argExist("-help"):
-          self.help()
+        if self.tool.argExist("-h") or self.tool.argExist("-help"): 
+            self.help()
 
-        if self.tool.argHasValue("-url"):
-          val = self.tool.argValue("-url")
-          self.url = val
+        if self.tool.argHasValue("-url"): 
+            self.url = self.tool.argValue("-url")
+        else: self.stop("Error, -url is missing !")
 
-          if urlparse(self.url).scheme=="":
-            self.url = "http://" + self.url
-          self.domain=urlparse(self.url).netloc
-        else:
-            self.stop("Error, -url is missing !")
+        if urlparse(self.url).scheme == "": self.url = "http://" + self.url
 
-        if self.tool.argHasValue("-deep"):
-          val = self.tool.argValue("-deep")
-          self.deep = int(val)
-        else:
-          self.deep = 2
-
-        if self.tool.argHasValue("-o"):
-            val = self.tool.argValue("-o")
-            self.outputFileName=val
-        else:
-            self.outputFileName=""
-
+        self.domain=urlparse(self.url).netloc
+        self.deep = int(self.tool.tryToGetValue("-o",2))
+        self.outputFileName = self.tool.tryToGetValue("-o","")
         self.verbose = self.tool.argExist("-v")
-
-        self.allowedExtensions=["html","php","htm"]
+        self.allowedExtensions=["html", "php", "htm"]
 
     def run(self):
         print("Starting scan of {} with deep {}".format(self.url,self.deep))
