@@ -35,8 +35,13 @@ class program():
           val = self.tool.argValue("-deep")
           self.deep = int(val)
         else:
-          #print("-deep flag not provided, setting deep to 2")
           self.deep = 2
+
+        if self.tool.argHasValue("-o"):
+            val = self.tool.argValue("-o")
+            self.outputFileName=val
+        else:
+            self.outputFileName=""
 
         self.verbose = self.tool.argExist("-v")
 
@@ -90,7 +95,11 @@ class program():
         print("")
 
     def writeFoundUrls(self,listUrls):
-        fileName=urlparse(self.url).netloc + ".txt"
+        if self.outputFileName=="":
+            fileName=urlparse(self.url).netloc + ".txt"
+        else:
+            filename=self.outputFileName
+
         f = open(fileName, "w")
         listUrls.sort()
         for url in listUrls:
@@ -145,12 +154,13 @@ class program():
 
     def help(self):
         print("")
-        print("Usage: python weber.py -url URL [-deep x] [-v]")
+        print("Usage: python weber.py -url URL [-deep x] [-v] [-o fileName]")
         print("")
         print("Options:")
         print("    -url URL        The url to scan")
         print("    -deep x         Depth of scan, number of iteration (Optional, by default set to 2)")
         print("    -v              Enable verbose during scan (Optional)")
+        print("    -o fileName     Output all urls found to this file (Optional, by default {domain}.txt)")
         print("")
         print("")
         exit(0)

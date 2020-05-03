@@ -11,3 +11,5 @@ This program will scrap an url. The verbose flag will print all url found during
 		-deep x         Depth of scan, number of iteration (Optional, by default set to 2)
 
 		-v              Enable verbose during scan (Optional)
+
+		-o fileName     Output all urls found to this file (Optional, by default {domain}.txt)
