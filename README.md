@@ -2,7 +2,7 @@
 
 This program will scrap an url. The verbose flag will print all url found during the scan.
 
-	Usage: python weber.py -url URL [-deep x] [-v]
+	Usage: python weber.py -url URL [-deep x] [-v] [-o fileName]
 
 	Options:
 
