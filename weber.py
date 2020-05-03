@@ -101,7 +101,9 @@ class program():
         return urlparse(url).netloc == self.domain
     
     def extract(self, url):
-        if self.isAFile(url): return []
+        if self.isAFile(url): 
+            print("File",url)
+            return []
         try:
             req = requests.get(url, self.headers)
             soup = BeautifulSoup(req.content, 'html.parser')
@@ -112,12 +114,12 @@ class program():
                 urlFound=u['href']
                 if self.sameDomain(urlFound):
                     urlFound=self.cleanUrl(urlFound)
-                    try: links.append(urlFound)
-                    except IndexError: 1
+                    links.append(urlFound)
             links=list(dict.fromkeys(links)) #removing duplicates
             return links
         except:
             print("\nERROR\n")
+            return []
 
     def isAFile(self,url):
         url=urlparse(url).path
