@@ -98,7 +98,7 @@ class program():
         if self.outputFileName=="":
             fileName=urlparse(self.url).netloc + ".txt"
         else:
-            filename=self.outputFileName
+            fileName=self.outputFileName
 
         f = open(fileName, "w")
         listUrls.sort()
