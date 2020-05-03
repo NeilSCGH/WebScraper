@@ -17,6 +17,10 @@ class program():
 
 
     def setup(self,args):
+        #Help
+        if self.tool.argExist("-h") or self.tool.argExist("-help"):
+          self.help()
+
         if self.tool.argHasValue("-url"):
           val = self.tool.argValue("-url")
           self.url = val
@@ -138,6 +142,18 @@ class program():
     def stop(self, msg = ""):
         if msg != "": print(msg)
         exit(0)#stop the program
+
+    def help(self):
+        print("")
+        print("Usage: python weber.py -url URL [-deep x] [-v]")
+        print("")
+        print("Options:")
+        print("    -url URL        The url to scan")
+        print("    -deep x         Depth of scan, number of iteration (Optional, by default set to 2)")
+        print("    -v              Enable verbose during scan (Optional)")
+        print("")
+        print("")
+        exit(0)
 
 if __name__ == '__main__':
     prog = program(sys.argv)
