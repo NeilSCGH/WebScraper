@@ -26,7 +26,7 @@ class tools():
     return self.argExist(self.argValue(argName))
 
   def tryToGetValue(self,argName,defaultValue):
-    if argHasValue(argName):
-      return self.tool.argValue("-deep")
+    if self.argHasValue(argName):
+      return self.argValue(argName)
     else:
       return defaultValue

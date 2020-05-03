@@ -15,7 +15,6 @@ class program():
         self.headers = requests.utils.default_headers()
         self.headers.update({ 'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0'})
 
-
     def setup(self,args):
         #Help
         if self.tool.argExist("-h") or self.tool.argExist("-help"): 
@@ -28,7 +27,7 @@ class program():
         if urlparse(self.url).scheme == "": self.url = "http://" + self.url
 
         self.domain=urlparse(self.url).netloc
-        self.deep = int(self.tool.tryToGetValue("-o",2))
+        self.deep = int(self.tool.tryToGetValue("-deep",2))
         self.outputFileName = self.tool.tryToGetValue("-o","")
         self.verbose = self.tool.argExist("-v")
         self.allowedExtensions=["html", "php", "htm"]
@@ -64,7 +63,7 @@ class program():
 
             if len(listToScan)==0: break
             
-        print("\nRemaining url to scan : {}\n".format(len(listToScan)))
+        print("\n{} Urls not scanned!".format(len(listToScan)))
 
         listToSave=listScanned[:]
         for i in range(len(listToScan)):
@@ -91,6 +90,7 @@ class program():
         for url in listUrls:
             f.write(url + "\n")
         f.close()
+        print("All urls found are in the file {} !\n".format(fileName))
 
     def removeSchemeUrl(self,url):
         u=urlparse(url)
