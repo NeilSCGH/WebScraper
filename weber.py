@@ -71,8 +71,12 @@ class program():
             
         print("\nRemaining url to scan : {}\n".format(len(listToScan)))
 
-        if self.verbose: self.printFoundUrls(listScanned)
-        self.writeFoundUrls(listScanned)
+        listToSave=listScanned[:]
+        for i in range(len(listToScan)):
+            listToSave.append(self.removeSchemeUrl(listToScan[i]))
+
+        if self.verbose: self.printFoundUrls(listToSave)
+        self.writeFoundUrls(listToSave)
 
     def printFoundUrls(self,listUrls):
         print("Url found ({}):".format(len(listUrls)))
