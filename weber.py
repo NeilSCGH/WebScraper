@@ -142,14 +142,14 @@ class program():
 
     def help(self):
         print("")
-        print("Usage: python weber.py -url URL [-deep x] [-v] [-o fileName]")
+        print("Usage: python weber.py -url URL [-deep x] [-v] [-o fileName] [-c cookie]")
         print("")
         print("Options:")
         print("    -url URL        The url to scan")
         print("    -deep x         Depth of scan, number of iteration (Optional, by default set to 2)")
         print("    -v              Enable verbose during scan (Optional)")
         print("    -o fileName     Output all urls found to this file (Optional, by default {domain}.txt)")
-        print("    -c cookie       Use the specified cookie")
+        print("    -c cookie       Use the specified cookie (Optional)")
         print("")
         print("")
         exit(0)
