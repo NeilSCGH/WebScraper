@@ -29,6 +29,7 @@ class program():
         self.domain=urlparse(self.url).netloc
         self.deep = int(self.tool.tryToGetValue("-deep",2))
         self.outputFileName = self.tool.tryToGetValue("-o","")
+        self.cookie = self.tool.tryToGetValue("-c","")
         self.verbose = self.tool.argExist("-v")
         self.allowedExtensions=["html", "php", "htm"]
 
@@ -62,8 +63,9 @@ class program():
             print("{} new urls found".format(len(listToScan)))
 
             if len(listToScan)==0: break
-            
-        print("\n{} Urls not scanned!".format(len(listToScan)))
+        
+        nbToScan=len(listToScan)
+        if nbToScan!=0: print("\n{} Urls not scanned!".format(nbToScan),end='')
 
         listToSave=listScanned[:]
         for i in range(len(listToScan)):
@@ -73,7 +75,7 @@ class program():
         self.writeFoundUrls(listToSave)
 
     def printFoundUrls(self,listUrls):
-        print("Url found ({}):".format(len(listUrls)))
+        print("\nUrls found ({}):".format(len(listUrls)))
         listUrls.sort()
         for url in listUrls:
             print(url)
@@ -108,7 +110,7 @@ class program():
             print("File",url)
             return []
         try:
-            req = requests.get(url, self.headers)
+            req = requests.get(url, self.headers, cookies={'PHPSESSID': self.cookie})
             soup = BeautifulSoup(req.content, 'html.parser')
             tab=soup.find_all('a', href=True)
 
@@ -147,6 +149,7 @@ class program():
         print("    -deep x         Depth of scan, number of iteration (Optional, by default set to 2)")
         print("    -v              Enable verbose during scan (Optional)")
         print("    -o fileName     Output all urls found to this file (Optional, by default {domain}.txt)")
+        print("    -c cookie       Use the specified cookie")
         print("")
         print("")
         exit(0)
