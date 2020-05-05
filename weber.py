@@ -74,13 +74,16 @@ class program():
         listToSave=listScanned[:]
         for i in range(len(listToScan)):
             listToSave.append(self.removeSchemeUrl(listToScan[i]))
+        listToSave.sort()
 
+        self.otherDomains= self.removeDuplicates(self.otherDomains)
+        self.otherDomains.sort()
 
         if self.verbose: 
             self.printFoundUrls(listToSave)
             self.printOtherDomains()
 
-        name=self.writeFoundUrls(listToSave)
+        name=self.writeUrlsToFile(listToSave)
         print("All urls found are in the file {} !\n".format(name))
 
     def getMainDomain(self,url):
@@ -91,9 +94,6 @@ class program():
 
     def printOtherDomains(self):
         print("\nOTHER DOMAINS:")
-        self.otherDomains= self.removeDuplicates(self.otherDomains)
-        self.otherDomains.sort()
-
         for url in self.otherDomains:
             if self.getMainDomain(url)==self.mainDomain:
                 print(url)
@@ -105,20 +105,24 @@ class program():
             print(url)
         print("")
 
-    def writeFoundUrls(self,listUrls):
+    def writeUrlsToFile(self,listUrls):
         if self.outputFileName=="":
             fileName=urlparse(self.url).netloc + ".txt"
         else:
             fileName=self.outputFileName
 
         f = open(fileName, "w")
-        listUrls.sort()
         for url in listUrls:
             f.write(url + "\n")
+
+        f.write("\n\n\nOTHER DOMAINS \n\n")
+
+        for url in self.otherDomains:
+            f.write(url + "\n")
+
         f.close()
 
-        return fileName
-        
+        return fileName        
 
     def removeSchemeUrl(self,url):
         u=urlparse(url)
