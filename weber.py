@@ -26,12 +26,16 @@ class program():
 
         if urlparse(self.url).scheme == "": self.url = "http://" + self.url
 
-        self.domain=urlparse(self.url).netloc
+        self.data=urlparse(self.url)
+        self.mainDomain=self.getMainDomain(self.url)
+
         self.deep = int(self.tool.tryToGetValue("-deep",2))
         self.outputFileName = self.tool.tryToGetValue("-o","")
         self.cookie = self.tool.tryToGetValue("-c","")
         self.verbose = self.tool.argExist("-v")
         self.allowedExtensions=["html", "php", "htm"]
+
+        self.otherDomains=[]
 
     def run(self):
         print("Starting scan of {} with deep {}".format(self.url,self.deep))
@@ -71,8 +75,28 @@ class program():
         for i in range(len(listToScan)):
             listToSave.append(self.removeSchemeUrl(listToScan[i]))
 
-        if self.verbose: self.printFoundUrls(listToSave)
-        self.writeFoundUrls(listToSave)
+
+        if self.verbose: 
+            self.printFoundUrls(listToSave)
+            self.printOtherDomains()
+
+        name=self.writeFoundUrls(listToSave)
+        print("All urls found are in the file {} !\n".format(name))
+
+    def getMainDomain(self,url):
+        data=urlparse(url)
+        domain=data.netloc
+        tmp=domain.split(".")
+        return tmp[-2] + "." + tmp[-1]
+
+    def printOtherDomains(self):
+        print("\nOTHER DOMAINS:")
+        self.otherDomains= self.removeDuplicates(self.otherDomains)
+        self.otherDomains.sort()
+
+        for url in self.otherDomains:
+            if self.getMainDomain(url)==self.mainDomain:
+                print(url)
 
     def printFoundUrls(self,listUrls):
         print("\nUrls found ({}):".format(len(listUrls)))
@@ -92,7 +116,9 @@ class program():
         for url in listUrls:
             f.write(url + "\n")
         f.close()
-        print("All urls found are in the file {} !\n".format(fileName))
+
+        return fileName
+        
 
     def removeSchemeUrl(self,url):
         u=urlparse(url)
@@ -103,7 +129,7 @@ class program():
         return u.scheme + "://" + u.netloc + u.path
 
     def sameDomain(self, url):
-        return urlparse(url).netloc == self.domain
+        return urlparse(url).netloc == (self.data).netloc
     
     def extract(self, url):
         if self.isAFile(url): 
@@ -117,14 +143,27 @@ class program():
             links=[]
             for u in tab:
                 urlFound=u['href']
+                urlFound=self.completeUrl(urlFound)
+                urlFound=self.cleanUrl(urlFound)
+
                 if self.sameDomain(urlFound):
-                    urlFound=self.cleanUrl(urlFound)
                     links.append(urlFound)
-            links=list(dict.fromkeys(links)) #removing duplicates
+                else:
+                    (self.otherDomains).append(urlFound)
+
+            links= self.removeDuplicates(links)
             return links
         except:
             print("\nERROR\n")
             return []
+
+    def removeDuplicates(self,tab):
+        return list(dict.fromkeys(tab))
+
+    def completeUrl(self,url):
+        if urlparse(url).netloc=="":
+            url = (self.data).scheme + "://" + (self.data).netloc + url
+        return url
 
     def isAFile(self,url):
         url=urlparse(url).path
