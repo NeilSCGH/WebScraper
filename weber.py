@@ -16,28 +16,21 @@ class program():
         self.headers.update({ 'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0'})
 
     def setup(self,args):
-        #Help
-        if self.tool.argExist("-h") or self.tool.argExist("-help"): 
-            self.help()
-
         if self.tool.argHasValue("-url"): 
             self.url = self.tool.argValue("-url")
         else: self.stop("Error, -url is missing !")
 
-        if urlparse(self.url).scheme == "": self.url = "http://" + self.url
+        if urlparse(self.url).scheme == "": 
+            self.url = "http://" + self.url
 
         self.data=urlparse(self.url)
         
-
         self.deep = int(self.tool.tryToGetValue("-deep",2))
         self.outputFileName = self.tool.tryToGetValue("-o","")
         self.cookie = self.tool.tryToGetValue("-c","")
-        self.verbose = self.tool.argExist("-v")
         self.allowedExtensions=["html", "php", "htm"]
 
-        self.otherDomains=[]
-
-
+        self.otherSubDomains=[]
 
         self.urlsToScan=[self.url]
         self.urlsFound=[self.url]
@@ -56,10 +49,17 @@ class program():
             self.urlsToScan = newUrls[:]
             self.urlsFound += newUrls
 
+            if len(self.urlsToScan)==0: 
+                break
+
         print("\n{} urls found but not scanned".format(len(self.urlsToScan)))
 
         print("\nUrls found are:")
         self.printList(self.urlsFound)
+
+        self.otherSubDomains=self.removeDuplicates(self.otherSubDomains)
+        print("\nOther subdomains are:")
+        self.printList(self.otherSubDomains)
 
     def printList(self,tab):
         tab.sort()
@@ -76,11 +76,16 @@ class program():
 
     def filterDomain(self, tab):
         ourDomain = self.getDomain(self.url)
-        newTab=[]
+        ourMainDomain = self.getMainDomain(self.url)
+
+        sameDomain=[]
+        otherSubDomain=[]
         for url in tab:
             if self.getDomain(url) == ourDomain:
-                newTab.append(url)
-        return newTab
+                sameDomain.append(url)
+            elif self.getMainDomain(url) == ourMainDomain:
+                self.otherSubDomains.append(url)
+        return sameDomain
 
     def filterAlreadyFound(self, tab):
         newTab=[]
@@ -89,6 +94,11 @@ class program():
             if url not in self.urlsFound: #attention avec http vs https
                 newTab.append(url)
         return newTab
+        
+    def getMainDomain(self, url): #www.example.com will become example.com
+        domain = self.getDomain(url)
+        data = domain.split(".")[-2:]
+        return data[0] + "." + data[1]
         
     def getDomain(self, url):
         return urlparse(url).netloc
@@ -130,10 +140,13 @@ class program():
 
     def cleanUrl(self, url):
         data=urlparse(url)
-        newUrl = data.scheme + "://" + data.netloc + data.path
+        newUrl = url#data.scheme + "://" + data.netloc + data.path
 
         if newUrl[-1]=="/": 
             newUrl=newUrl[:-1]
+
+        if "#" in newUrl: 
+            newUrl=newUrl.split("#")[0]
 
         return newUrl
 
