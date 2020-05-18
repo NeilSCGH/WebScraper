@@ -16,12 +16,12 @@ class program():
         self.headers.update({ 'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0'})
 
     def setup(self,args):
+        self.keepParams = self.tool.argExist("-kp")
+
         if self.tool.argHasValue("-url"): 
             self.url = self.tool.argValue("-url")
+            self.url=self.cleanUrl(self.url)
         else: self.stop("Error, -url is missing !")
-
-        if urlparse(self.url).scheme == "": 
-            self.url = "http://" + self.url
 
         self.data=urlparse(self.url)
         
@@ -97,6 +97,7 @@ class program():
         
     def getMainDomain(self, url): #www.example.com will become example.com
         domain = self.getDomain(url)
+        print(url)
         data = domain.split(".")[-2:]
         return data[0] + "." + data[1]
         
@@ -126,11 +127,12 @@ class program():
 
     def getHrefsUrl(self,url):
         try:
-            req = requests.get(url, self.headers, cookies={'PHPSESSID': self.cookie})
+            req = requests.get(url, self.headers, verify=False, cookies={'PHPSESSID': self.cookie})
             soup = BeautifulSoup(req.content, 'html.parser')
             return soup.find_all('a', href=True)
-        except:
-            print("Error with",url)
+        except:# ValueError as valerr:
+            print("Error with {}".format(url))
+            #print("Error with {}\n{}\n\n".format(url,valerr))
             return []
 
     def completeUrl(self,url):
@@ -140,15 +142,21 @@ class program():
 
     def cleanUrl(self, url):
         data=urlparse(url)
-        newUrl = url#data.scheme + "://" + data.netloc + data.path
 
-        if newUrl[-1]=="/": 
-            newUrl=newUrl[:-1]
+        if data.scheme=="":
+            url = "http://" + url
+            data=urlparse(url)
 
-        if "#" in newUrl: 
-            newUrl=newUrl.split("#")[0]
+        if not self.keepParams : 
+            url=data.scheme + "://" + data.netloc + data.path
 
-        return newUrl
+        if url[-1]=="/": 
+            url=url[:-1]
+
+        if "#" in url: 
+            url=url.split("#")[0]
+
+        return url
 
     def stop(self, msg = ""):
         if msg != "": print(msg)
